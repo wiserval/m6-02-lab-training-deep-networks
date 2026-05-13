@@ -68,35 +68,19 @@ val_loader = DataLoader(test_set, batch_size=256, shuffle=False)
 
 ## Tasks
 
-### Task 1 — Build the Training Loop
+### Task 1 — Train an MLP and Watch It Overfit
 
-1. Define a simple MLP for Fashion-MNIST:
-   - Input: flatten the 28×28 image into 784 features.
-   - Hidden: 256 → ReLU → 128 → ReLU.
-   - Output: 10 logits (no softmax — `CrossEntropyLoss` includes it).
-2. Implement the canonical training loop. For each epoch:
-   - Iterate over `train_loader` with the five-step loop (`zero_grad`, forward, loss, backward, step).
-   - At the end of the epoch compute the **average training loss** and the **validation loss + accuracy** on `val_loader`.
-3. Train for 15 epochs with `Adam(lr=1e-3)`. Save the per-epoch train and validation losses.
-4. Plot training and validation loss on the same axes.
+Build the canonical PyTorch training loop, watch it succeed on the full dataset, then deliberately break the setup until you can see overfitting on the training curves.
 
-**Expected behaviour:** validation accuracy should reach roughly 87–89% in this baseline setup.
+1. Define a simple MLP for Fashion-MNIST: flatten the 28×28 image to 784 features, hidden sizes `[256, 128]` with ReLU between them, output 10 logits (no softmax — `CrossEntropyLoss` includes it).
+2. Implement the canonical training loop. For each epoch, iterate over `train_loader` with the five-step loop (`zero_grad`, forward, loss, backward, step), then compute the **average training loss** and the **validation loss + accuracy** on `val_loader`. Train this baseline for 15 epochs with `Adam(lr=1e-3)` and plot the train/validation loss curves. Validation accuracy should reach roughly 87–89%.
+3. Now overfit on purpose: reduce the training set to **1000 examples** (first 1000 rows of `train_set`) and rebuild the model as a much larger MLP — hidden sizes `[512, 512, 512]`, all ReLU.
+4. Train this large model on the small training set for 50 epochs with the same `Adam(lr=1e-3)`. Plot train/val loss on the same axes — the training loss should drop toward zero while the validation loss climbs back up.
+5. Report the gap between final training and validation accuracy, and in a markdown cell write 2–3 sentences on **where** the model starts overfitting and **how** you can tell from the curves.
 
-### Task 2 — Make It Overfit On Purpose
+### Task 2 — Fight Overfitting
 
-Now break the model deliberately so you can see what overfitting looks like.
-
-1. Reduce the training set to **1000 examples** by taking the first 1000 rows of `train_set`.
-2. Build a much larger MLP: hidden sizes `[512, 512, 512]`, all ReLU.
-3. Train for 50 epochs with the same `Adam(lr=1e-3)`.
-4. Plot training and validation loss. The training loss should go to near zero while validation loss climbs back up.
-5. Report the gap between final training and validation accuracy.
-
-In a markdown cell, write 2–3 sentences interpreting the curves: where does the model start overfitting, and how can you tell?
-
-### Task 3 — Fight Overfitting
-
-Take the same overfitting setup from Task 2 (1000-sample training set, large MLP) and apply the regularisation toolkit. For each technique below, train a new model from scratch and report the best validation accuracy and the train/val gap.
+Take the same overfitting setup from Task 1 (1000-sample training set, large MLP) and apply the regularisation toolkit. For each technique below, train a fresh model and record the best validation accuracy and the train/val gap.
 
 1. **Dropout** with `p=0.3` after each hidden layer.
 2. **Batch normalisation** with `nn.BatchNorm1d` after each linear layer (before the activation).
@@ -107,7 +91,7 @@ Tabulate the results:
 
 | Technique | Best val accuracy | Train/val gap | Final epoch |
 |---|---|---|---|
-| Baseline (Task 2) | … | … | … |
+| Baseline (Task 1, overfitting setup) | … | … | … |
 | Dropout | … | … | … |
 | BatchNorm | … | … | … |
 | Weight decay | … | … | … |
@@ -115,19 +99,16 @@ Tabulate the results:
 
 In a markdown cell, answer: which technique gave the largest improvement on this small dataset, and what does that suggest?
 
-### Task 4 — Optimisers and Learning Rate
+### Task 3 — Optimisers and Learning Rate
 
-Go back to the **full** Fashion-MNIST training set and the original two-hidden-layer MLP from Task 1.
+Go back to the **full** Fashion-MNIST training set and the original two-hidden-layer MLP from Task 1's baseline.
 
 1. Train three identical models for 15 epochs each, varying only the optimiser:
    - `SGD(lr=0.01, momentum=0.9)`
    - `Adam(lr=1e-3)`
    - `Adam(lr=1e-4)`
 2. Plot the validation loss curves for all three on the same axes.
-3. In a markdown cell, comment on:
-   - Which optimiser converges fastest in the first few epochs?
-   - Which one ends up with the lowest validation loss?
-   - What does the comparison between the two Adam runs tell you about learning-rate sensitivity?
+3. In a markdown cell, comment on which optimiser converges fastest in the first few epochs, which ends up with the lowest validation loss, and what the two Adam runs tell you about learning-rate sensitivity.
 
 ## Submission
 
@@ -138,7 +119,7 @@ Go back to the **full** Fashion-MNIST training set and the original two-hidden-l
 ### Definition of done (checklist)
 
 - [ ] Working training loop with both training and validation loss tracking per epoch.
-- [ ] Overfitting demonstration with clearly diverging train/val loss curves.
+- [ ] Overfitting demonstration with clearly diverging train/val loss curves (still part of Task 1).
 - [ ] Comparison table of regularisation techniques with at least 4 rows.
 - [ ] Optimiser comparison with all three runs plotted on the same axes.
 - [ ] Each task has at least one markdown cell with interpretation.
